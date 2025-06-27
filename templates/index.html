@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Command Assistant</title>
+    <style>
+        :root {
+            /* Catppuccin Mocha color palette */
+            --ctp-mocha-rosewater: #f5e0dc;
+            --ctp-mocha-flamingo: #f2cdcd;
+            --ctp-mocha-pink: #f5c2e7;
+            --ctp-mocha-mauve: #cba6f7;
+            --ctp-mocha-red: #f38ba8;
+            --ctp-mocha-maroon: #eba0ac;
+            --ctp-mocha-peach: #fab387;
+            --ctp-mocha-yellow: #f9e2af;
+            --ctp-mocha-green: #a6e3a1;
+            --ctp-mocha-teal: #94e2d5;
+            --ctp-mocha-sky: #89dceb;
+            --ctp-mocha-sapphire: #74c7ec;
+            --ctp-mocha-blue: #89b4fa;
+            --ctp-mocha-lavender: #b4befe;
+            --ctp-mocha-text: #cdd6f4;
+            --ctp-mocha-subtext1: #bac2de;
+            --ctp-mocha-subtext0: #a6adc8;
+            --ctp-mocha-overlay2: #9399b2;
+            --ctp-mocha-overlay1: #7f849c;
+            --ctp-mocha-overlay0: #6c7086;
+            --ctp-mocha-surface2: #585b70;
+            --ctp-mocha-surface1: #45475a;
+            --ctp-mocha-surface0: #313244;
+            --ctp-mocha-base: #1e1e2e;
+            --ctp-mocha-mantle: #181825;
+            --ctp-mocha-crust: #11111b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--ctp-mocha-base);
+            color: var(--ctp-mocha-text);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                max-width: 100%;
+            }
+            
+            .input-area {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+
+        h1 {
+            color: var(--ctp-mocha-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .card {
+            background-color: var(--ctp-mocha-surface0);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            background-color: var(--ctp-mocha-surface1);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--ctp-mocha-text);
+            flex-grow: 1;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            background-color: var(--ctp-mocha-surface2);
+            box-shadow: 0 0 0 2px var(--ctp-mocha-lavender);
+        }
+
+        input::placeholder {
+            color: var(--ctp-mocha-subtext0);
+            opacity: 0.6;
+        }
+
+        button {
+            background-color: var(--ctp-mocha-mauve);
+            color: var(--ctp-mocha-crust);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--ctp-mocha-lavender);
+        }
+
+        button.secondary {
+            background-color: var(--ctp-mocha-surface2);
+            color: var(--ctp-mocha-text);
+        }
+
+        button.secondary:hover {
+            background-color: var(--ctp-mocha-overlay0);
+        }
+
+        .result-area {
+            margin-top: 20px;
+        }
+
+        .section {
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            color: var(--ctp-mocha-sapphire);
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .command {
+            background-color: var(--ctp-mocha-surface1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+            color: var(--ctp-mocha-green);
+        }
+
+        pre {
+            background-color: var(--ctp-mocha-surface1);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            color: var(--ctp-mocha-text);
+            font-family: 'Courier New', monospace;
+        }
+
+        .notes {
+            background-color: var(--ctp-mocha-surface1);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--ctp-mocha-peach);
+        }
+
+        .error {
+            background-color: var(--ctp-mocha-surface1);
+            border-left: 4px solid var(--ctp-mocha-red);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--ctp-mocha-red);
+            margin-bottom: 15px;
+        }
+
+        .success {
+            background-color: var(--ctp-mocha-surface1);
+            border-left: 4px solid var(--ctp-mocha-green);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--ctp-mocha-green);
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        /* Loading animation */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(30, 30, 46, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loader-container.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loader {
+            border: 5px solid var(--ctp-mocha-surface2);
+            border-top: 5px solid var(--ctp-mocha-blue);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+
+        .loader-text {
+            position: absolute;
+            margin-top: 80px;
+            color: var(--ctp-mocha-blue);
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .fade-in-sequence > * {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <h1>Command Assistant</h1>
+
+    <div class="card">
+        <div class="section-title">Enter your command</div>
+        <div class="input-area">
+            <input type="text" id="command-input" placeholder="Enter your command in natural language...">
+            <button onclick="interpretCommand()">Execute</button>
+        </div>
+        <div id="status-message"></div>
+    </div>
+
+    <div id="confirmation-dialog" class="hidden card bounce-in">
+        <div class="section-title">Confirm Command Execution</div>
+        <p>Do you want to execute this command?</p>
+        <div id="confirm-command" class="command"></div>
+        <div class="button-group">
+            <button onclick="confirmExecution(true)">Yes</button>
+            <button class="secondary" onclick="confirmExecution(false)">No</button>
+        </div>
+    </div>
+
+    <div id="result-container" class="card hidden">
+        <div class="section fade-in-sequence">
+            <div class="section-title">Interpreted Command</div>
+            <div id="interpreted-command" class="command"></div>
+        </div>
+
+        <div class="section fade-in-sequence" id="notes-section">
+            <div class="section-title">Notes</div>
+            <div id="command-notes" class="notes"></div>
+        </div>
+
+        <div class="section fade-in-sequence">
+            <div class="section-title">Result</div>
+            <pre id="command-result"></pre>
+        </div>
+    </div>
+
+    <!-- Loading animation -->
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <div class="loader-text" id="loader-text">Processing command...</div>
+    </div>
+
+    <script>
+        // Show animated elements sequentially
+        function animateElementsSequentially(parentSelector) {
+            const elements = document.querySelectorAll(`${parentSelector} > *`);
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.15}s`;
+            });
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            // Add typewriter effect to placeholders
+            const input = document.getElementById('command-input');
+            if (input) {
+                const originalPlaceholder = input.placeholder;
+                input.placeholder = "";
+                
+                let i = 0;
+                const typeWriter = () => {
+                    if (i < originalPlaceholder.length) {
+                        input.placeholder += originalPlaceholder.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 50);
+                    }
+                };
+                
+                setTimeout(typeWriter, 1000);
+            } else {
+                console.error('Command input element not found');
+            }
+            
+            // Test if all required elements exist
+            const requiredElements = [
+                'command-input',
+                'confirmation-dialog',
+                'result-container',
+                'confirm-command',
+                'interpreted-command',
+                'command-notes',
+                'command-result',
+                'notes-section',
+                'status-message',
+                'loader'
+            ];
+            
+            requiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (!element) {
+                    console.error(`Required element with id '${id}' not found`);
+                } else {
+                    console.log(`✓ Element '${id}' found`);
+                }
+            });
+        });
+
+        function showLoader(message = "Processing command...") {
+            document.getElementById('loader-text').textContent = message;
+            document.getElementById('loader').classList.add('active');
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').classList.remove('active');
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status-message');
+            statusElement.innerHTML = `<div class="${type}">${message}</div>`;
+            statusElement.style.display = 'block';
+            
+            // Auto-hide after 5 seconds for info messages
+            if (type === 'info') {
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function clearStatus() {
+            document.getElementById('status-message').style.display = 'none';
+        }
+
+        function interpretCommand() {
+            const userInput = document.getElementById('command-input').value;
+            
+            if (!userInput) {
+                showStatus("Please enter a command", "error");
+                return;
+            }
+            
+            clearStatus();
+            showLoader("Interpreting your command...");
+            
+            fetch('/interpret', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({command: userInput}),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideLoader();
+                console.log('Received data:', data);
+                
+                // Store the interpreted command and notes for confirmation
+                window.pendingCommand = data.interpreted_command;
+                window.pendingNotes = data.notes;
+                
+                // Show confirmation dialog with animation
+                document.getElementById('confirm-command').textContent = data.interpreted_command;
+                document.getElementById('confirmation-dialog').classList.remove('hidden');
+                document.getElementById('result-container').classList.add('hidden');
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Error in interpretCommand:', error);
+                showStatus(`Error: ${error.message}`, "error");
+            });
+        }
+
+        function confirmExecution(confirmed) {
+            // Hide confirmation dialog
+            document.getElementById('confirmation-dialog').classList.add('hidden');
+            
+            if (confirmed && window.pendingCommand) {
+                showLoader("Executing command...");
+                fetch('/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({command: window.pendingCommand}),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error executing command');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    hideLoader();
+                    // Show the results with animations
+                    document.getElementById('result-container').classList.remove('hidden');
+                    document.getElementById('interpreted-command').textContent = data.interpreted_command;
+                    // Handle notes section
+                    if (window.pendingNotes && window.pendingNotes.trim()) {
+                        document.getElementById('notes-section').classList.remove('hidden');
+                        document.getElementById('command-notes').textContent = window.pendingNotes;
+                    } else {
+                        document.getElementById('notes-section').classList.add('hidden');
+                    }
+                    let resultText = '';
+                    if (typeof data.result === 'object') {
+                        resultText = data.result.stdout || '';
+                        if (data.result.stderr) {
+                            resultText += '\nErrors:\n' + data.result.stderr;
+                        }
+                    } else {
+                        resultText = data.result;
+                    }
+                    // Animate the result text character by character
+                    const resultElement = document.getElementById('command-result');
+                    resultElement.textContent = '';
+                    // Animate elements sequentially
+                    animateElementsSequentially('#result-container .fade-in-sequence');
+                    // Type out the result text
+                    if (resultText.length > 500) {
+                        // For long results, just show it all at once with fade in
+                        resultElement.textContent = resultText;
+                        resultElement.style.opacity = 0;
+                        setTimeout(() => {
+                            resultElement.style.opacity = 1;
+                            resultElement.style.transition = 'opacity 0.5s';
+                        }, 100);
+                    } else {
+                        // For shorter results, type it out
+                        let i = 0;
+                        const typeResult = () => {
+                            if (i < resultText.length) {
+                                resultElement.textContent += resultText.charAt(i);
+                                i++;
+                                setTimeout(typeResult, 10);
+                            }
+                        };
+                        setTimeout(typeResult, 500);
+                    }
+                })
+                .catch(error => {
+                    hideLoader();
+                    console.error('Error:', error);
+                    showStatus(`Error executing command: ${error.message}`, "error");
+                });
+            }
+        }
+
+        // Add event listener for Enter key in command input
+        document.getElementById('command-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                interpretCommand();
+            }
+        });
+    </script>
+</body>
+</html>
+
