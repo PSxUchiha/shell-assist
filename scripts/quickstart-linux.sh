@@ -1,20 +1,15 @@
 #!/bin/bash
 set -e
 
-# Quickstart script for Shell Assistant (macOS)
+# Quickstart script for Shell Assistant (Linux)
 
-echo "🚀 Setting up Shell Assistant for macOS..."
+echo "🚀 Setting up Shell Assistant for Linux..."
 echo "=========================================="
 
 # 1. Install Ollama if not present
 if ! command -v ollama &> /dev/null; then
-  echo "📦 Ollama not found. Installing via Homebrew..."
-  if command -v brew &> /dev/null; then
-    brew install ollama
-  else
-    echo "❌ Homebrew not found. Please install Homebrew or install Ollama manually from https://ollama.com/download"
-    exit 1
-  fi
+  echo "📦 Ollama not found. Installing..."
+  curl -fsSL https://ollama.com/install.sh | sh
 else
   echo "✅ Ollama already installed"
 fi

@@ -94,7 +94,7 @@ NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
         
         # Call Ollama with structured output
         response = ollama.chat(
-            model='deepseek-coder',
+            model='deepseek-coder:6.7b',
             messages=[
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': user_input}
