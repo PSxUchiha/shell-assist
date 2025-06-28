@@ -4,11 +4,22 @@ import json
 import platform
 import re
 
+class CommandHelp(BaseModel):
+    """Schema for detailed command help information"""
+    description: str = Field(description="Detailed description of what the command does")
+    parameters: list[str] = Field(default=[], description="List of key parameters and their purposes")
+    examples: list[str] = Field(default=[], description="Example variations of the command")
+    risks: list[str] = Field(default=[], description="Potential risks or side effects")
+    alternatives: list[str] = Field(default=[], description="Alternative commands or approaches")
+    related_commands: list[str] = Field(default=[], description="Related commands that might be useful")
+    risk_score: int = Field(default=0, description="Risk score from 0-10, where 0 is safe and 10 is extremely dangerous")
+
 class CommandOutput(BaseModel):
     """Schema for structured command output"""
     command: str = Field(description="The exact shell command to execute without any conversational text")
     requires_sudo: bool = Field(default=False, description="Whether this command requires sudo privileges")
     notes: str = Field(default="", description="Optional notes about the command execution")
+    help: CommandHelp = Field(default_factory=lambda: CommandHelp(), description="Detailed help information for the command")
 
 def interpret_command(user_input, distro_info, user_info):
     """
@@ -54,11 +65,34 @@ CRITICAL RULES FOR macOS COMMANDS:
 
 4. NEVER use sudo unless absolutely necessary for system modifications.
 
+5. ALWAYS provide detailed help information including:
+   - Clear description of what the command does
+   - Key parameters and their purposes
+   - Example variations
+   - Potential risks
+   - Alternative approaches
+   - Related commands
+   - Risk score (0-10) where:
+     * 0-2: Safe commands (read-only, basic info)
+     * 3-4: Low risk (file operations in user space)
+     * 5-6: Medium risk (system queries, network access)
+     * 7-8: High risk (system modifications, package installs)
+     * 9-10: Extreme risk (system-critical operations, data deletion)
+
 Respond ONLY with a valid JSON object matching this exact schema:
 {{
   "command": "the exact shell command to execute",
   "requires_sudo": false,
-  "notes": "brief explanation of what the command does"
+  "notes": "brief explanation of what the command does",
+  "help": {{
+    "description": "detailed description of what the command does and why it's useful",
+    "parameters": ["list of key parameters and their purposes"],
+    "examples": ["example variations of the command"],
+    "risks": ["potential risks or side effects"],
+    "alternatives": ["alternative commands or approaches"],
+    "related_commands": ["related commands that might be useful"],
+    "risk_score": 0
+  }}
 }}
 
 NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
@@ -79,12 +113,34 @@ IMPORTANT RULES FOR LINUX:
 2. Only mark requires_sudo as true when absolutely necessary (system modifications, package installs, etc.)
 3. Use appropriate Linux commands and tools
 4. Prefer user-space operations over system operations
+5. ALWAYS provide detailed help information including:
+   - Clear description of what the command does
+   - Key parameters and their purposes
+   - Example variations
+   - Potential risks
+   - Alternative approaches
+   - Related commands
+   - Risk score (0-10) where:
+     * 0-2: Safe commands (read-only, basic info)
+     * 3-4: Low risk (file operations in user space)
+     * 5-6: Medium risk (system queries, network access)
+     * 7-8: High risk (system modifications, package installs)
+     * 9-10: Extreme risk (system-critical operations, data deletion)
 
 Respond ONLY with a valid JSON object matching this exact schema:
 {{
   "command": "the exact shell command to execute",
   "requires_sudo": false,
-  "notes": "optional explanation"
+  "notes": "optional explanation",
+  "help": {{
+    "description": "detailed description of what the command does and why it's useful",
+    "parameters": ["list of key parameters and their purposes"],
+    "examples": ["example variations of the command"],
+    "risks": ["potential risks or side effects"],
+    "alternatives": ["alternative commands or approaches"],
+    "related_commands": ["related commands that might be useful"],
+    "risk_score": 0
+  }}
 }}
 
 NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
@@ -149,7 +205,16 @@ NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
                         parsed_content = {
                             "command": f"echo 'Unable to parse command from: {content[:100]}...'",
                             "requires_sudo": False,
-                            "notes": "Failed to parse model response as JSON"
+                            "notes": "Failed to parse model response as JSON",
+                            "help": {
+                                "description": "This is a fallback command due to parsing issues",
+                                "parameters": [],
+                                "examples": [],
+                                "risks": ["Command may not work as expected"],
+                                "alternatives": ["Try rephrasing your request"],
+                                "related_commands": [],
+                                "risk_score": 0
+                            }
                         }
         else:
             parsed_content = content

@@ -46,12 +46,30 @@ def interpret():
         print(f"Notes: {notes}")
         return jsonify({
             'interpreted_command': command,
-            'notes': notes
+            'notes': notes,
+            'help': {
+                'description': command_output.help.description,
+                'parameters': command_output.help.parameters,
+                'examples': command_output.help.examples,
+                'risks': command_output.help.risks,
+                'alternatives': command_output.help.alternatives,
+                'related_commands': command_output.help.related_commands,
+                'risk_score': command_output.help.risk_score
+            }
         })
     except Exception as e:
         return jsonify({
             'interpreted_command': f"echo 'Error: {str(e)}'",
-            'notes': f"An error occurred: {str(e)}"
+            'notes': f"An error occurred: {str(e)}",
+            'help': {
+                'description': 'Error occurred while interpreting command',
+                'parameters': [],
+                'examples': [],
+                'risks': ['Command may not work as expected'],
+                'alternatives': ['Try rephrasing your request'],
+                'related_commands': [],
+                'risk_score': 0
+            }
         }), 400
 
 @app.route('/execute', methods=['POST'])

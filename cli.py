@@ -126,8 +126,21 @@ class EnhancedCLI:
         
         self.console.print(table)
     
-    def print_interpreted_command(self, command: str, notes: str = "", requires_sudo: bool = False):
-        """Display the interpreted command with formatting"""
+    def get_risk_level(self, risk_score: int) -> tuple[str, str]:
+        """Get risk level description and color based on risk score"""
+        if risk_score <= 2:
+            return "🟢 Safe", "green"
+        elif risk_score <= 4:
+            return "🟡 Low Risk", "yellow"
+        elif risk_score <= 6:
+            return "🟠 Medium Risk", "orange3"
+        elif risk_score <= 8:
+            return "🔴 High Risk", "red"
+        else:
+            return "⛔ Extreme Risk", "bold red"
+
+    def print_interpreted_command(self, command: str, notes: str = "", requires_sudo: bool = False, help_info: dict = None):
+        """Display the interpreted command with formatting and detailed help"""
         # Create a panel for the command
         command_text = Text()
         command_text.append("🔧 ", style="bold blue")
@@ -141,6 +154,16 @@ class EnhancedCLI:
         )
         
         self.console.print(command_panel)
+        
+        # Show risk score if available
+        if help_info and 'risk_score' in help_info:
+            risk_level, risk_color = self.get_risk_level(help_info['risk_score'])
+            risk_text = Text()
+            risk_text.append("⚠️ ", style="bold red")
+            risk_text.append("Risk Level: ", style="bold white")
+            risk_text.append(f"{risk_level} ({help_info['risk_score']}/10)", style=risk_color)
+            risk_panel = Panel(risk_text, style=risk_color, border_style=risk_color)
+            self.console.print(risk_panel)
         
         # Show notes if any
         if notes:
@@ -156,6 +179,70 @@ class EnhancedCLI:
             sudo_warning.append("⚠️ ", style="bold red")
             sudo_warning.append("This command requires sudo privileges!", style="bold red")
             self.console.print(Panel(sudo_warning, style="bold red", border_style="red"))
+        
+        # Show detailed help information if available
+        if help_info:
+            self.print_detailed_help(help_info)
+    
+    def print_detailed_help(self, help_info: dict):
+        """Display detailed help information in an organized format"""
+        # Description
+        if help_info.get('description'):
+            desc_text = Text()
+            desc_text.append("📖 ", style="bold blue")
+            desc_text.append("Description:", style="bold white")
+            desc_panel = Panel(help_info['description'], title=desc_text, style="bold blue")
+            self.console.print(desc_panel)
+        
+        # Parameters
+        if help_info.get('parameters') and len(help_info['parameters']) > 0:
+            params_text = Text()
+            params_text.append("⚙️ ", style="bold cyan")
+            params_text.append("Parameters:", style="bold white")
+            
+            params_content = "\n".join([f"• {param}" for param in help_info['parameters']])
+            params_panel = Panel(params_content, title=params_text, style="bold cyan")
+            self.console.print(params_panel)
+        
+        # Examples
+        if help_info.get('examples') and len(help_info['examples']) > 0:
+            examples_text = Text()
+            examples_text.append("💡 ", style="bold green")
+            examples_text.append("Examples:", style="bold white")
+            
+            examples_content = "\n".join([f"• {example}" for example in help_info['examples']])
+            examples_panel = Panel(examples_content, title=examples_text, style="bold green")
+            self.console.print(examples_panel)
+        
+        # Risks
+        if help_info.get('risks') and len(help_info['risks']) > 0:
+            risks_text = Text()
+            risks_text.append("⚠️ ", style="bold red")
+            risks_text.append("Risks:", style="bold white")
+            
+            risks_content = "\n".join([f"• {risk}" for risk in help_info['risks']])
+            risks_panel = Panel(risks_content, title=risks_text, style="bold red")
+            self.console.print(risks_panel)
+        
+        # Alternatives
+        if help_info.get('alternatives') and len(help_info['alternatives']) > 0:
+            alt_text = Text()
+            alt_text.append("🔄 ", style="bold magenta")
+            alt_text.append("Alternatives:", style="bold white")
+            
+            alt_content = "\n".join([f"• {alt}" for alt in help_info['alternatives']])
+            alt_panel = Panel(alt_content, title=alt_text, style="bold magenta")
+            self.console.print(alt_panel)
+        
+        # Related Commands
+        if help_info.get('related_commands') and len(help_info['related_commands']) > 0:
+            related_text = Text()
+            related_text.append("🔗 ", style="bold yellow")
+            related_text.append("Related Commands:", style="bold white")
+            
+            related_content = "\n".join([f"• {cmd}" for cmd in help_info['related_commands']])
+            related_panel = Panel(related_content, title=related_text, style="bold yellow")
+            self.console.print(related_panel)
     
     def print_execution_result(self, result, command: str):
         """Display command execution results with formatting"""
@@ -255,7 +342,17 @@ class EnhancedCLI:
                         notes = "This command requires sudo privileges."
                 
                 # Display interpreted command
-                self.print_interpreted_command(command, notes, requires_sudo)
+                help_info = {
+                    'description': command_output.help.description,
+                    'parameters': command_output.help.parameters,
+                    'examples': command_output.help.examples,
+                    'risks': command_output.help.risks,
+                    'alternatives': command_output.help.alternatives,
+                    'related_commands': command_output.help.related_commands,
+                    'risk_score': command_output.help.risk_score
+                } if hasattr(command_output, 'help') and command_output.help else None
+                
+                self.print_interpreted_command(command, notes, requires_sudo, help_info)
                 
                 # Check if command is safe
                 if not is_safe_command_func(command):

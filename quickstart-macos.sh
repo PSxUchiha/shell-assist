@@ -34,7 +34,7 @@ if ollama list | grep -q "deepseek-coder:6.7b"; then
     echo "✅ Model deepseek-coder:6.7b already available"
 else
     echo "📥 Model not found. Pulling deepseek-coder:6.7b model..."
-    ollama pull deepseek-coder:6.7b
+ollama pull deepseek-coder:6.7b
     echo "✅ Model pulled successfully"
 fi
 
@@ -68,11 +68,11 @@ fi
 if [ $dependency_status -ne 0 ]; then
     echo "🔍 Verifying installation..."
     python3 check_dependencies.py > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        echo "✅ All dependencies verified successfully"
-    else
-        echo "❌ Dependency verification failed"
-        exit 1
+if [ $? -eq 0 ]; then
+    echo "✅ All dependencies verified successfully"
+else
+    echo "❌ Dependency verification failed"
+    exit 1
     fi
 fi
 
