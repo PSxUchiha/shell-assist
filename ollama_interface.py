@@ -2,6 +2,7 @@ import ollama
 from pydantic import BaseModel, Field
 import json
 import platform
+import re
 
 class CommandOutput(BaseModel):
     """Schema for structured command output"""
@@ -29,7 +30,6 @@ Home Directory: {user_info['home']}
 Available user folders: {', '.join(user_info['folders'].keys())}
 
 CRITICAL RULES FOR macOS COMMANDS:
-
 1. ALWAYS prefer standard Unix/GNU utilities first:
    - File operations: ls, find, grep, cat, head, tail, less, more
    - Text processing: sed, awk, sort, uniq, wc, cut, tr
@@ -62,6 +62,7 @@ Respond ONLY with a valid JSON object matching this exact schema:
 }}
 
 NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
+
     else:  # Linux
         system_prompt = f"""You are a Linux command generator that converts natural language to precise shell commands.
 
@@ -102,17 +103,57 @@ NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
             format=schema
         )
         
-        # Extract the content from the ChatResponse object
-        content = response.message.content
+        # Handle different response formats (compatibility fix)
+        content = None
         
+        # Try new API format first (ollama >= 0.4.0)
+        if hasattr(response, 'message') and hasattr(response.message, 'content'):
+            content = response.message.content
+        # Try alternative new API format
+        elif hasattr(response, 'message') and isinstance(response.message, dict):
+            content = response.message.get('content')
+        # Try old API format (ollama <= 0.1.x) - Dictionary response
+        elif isinstance(response, dict):
+            if 'message' in response and isinstance(response['message'], dict):
+                content = response['message'].get('content')
+            elif 'message' in response and isinstance(response['message'], str):
+                content = response['message']
+            elif 'content' in response:
+                content = response['content']
+            elif 'response' in response:  # Some versions use 'response' key
+                content = response['response']
+            else:
+                # Last resort - try to extract any text content
+                content = str(response)
+        else:
+            # Fallback for unknown formats
+            content = str(response)
+
         # Parse the JSON content
         if isinstance(content, str):
-            # Parse the JSON string
-            parsed_content = json.loads(content)
+            try:
+                parsed_content = json.loads(content)
+            except json.JSONDecodeError:
+                # If content is not valid JSON, try to extract it
+                # Sometimes the model wraps JSON in markdown code blocks
+                json_match = re.search(r'``````', content, re.DOTALL)
+                if json_match:
+                    parsed_content = json.loads(json_match.group(1))
+                else:
+                    # Try to find any JSON-like structure
+                    json_match = re.search(r'(\{.*?\})', content, re.DOTALL)
+                    if json_match:
+                        parsed_content = json.loads(json_match.group(1))
+                    else:
+                        # If no JSON found, create a fallback response
+                        parsed_content = {
+                            "command": f"echo 'Unable to parse command from: {content[:100]}...'",
+                            "requires_sudo": False,
+                            "notes": "Failed to parse model response as JSON"
+                        }
         else:
-            # Content is already a dict
             parsed_content = content
-        
+
         # Validate with Pydantic
         command_output = CommandOutput(**parsed_content)
         
@@ -122,5 +163,3 @@ NO markdown, NO explanations, NO code blocks - ONLY the JSON object."""
         raise ValueError(f"Model returned invalid JSON: {e}")
     except Exception as e:
         raise ValueError(f"Model did not return valid output: {e}")
-
-
