@@ -1,4 +1,4 @@
-# Shell Assistant
+# Shell Assist
 
 A local app that interprets natural language and safely executes shell commands on Linux and macOS. Powered by Ollama and LLMs for robust, platform-aware command generation.
 
@@ -12,12 +12,12 @@ A local app that interprets natural language and safely executes shell commands 
 ## Quick Start
 
 
-git clone https://github.com/PSxUchiha/shell-assistant.git
+git clone https://github.com/PSxUchiha/shell-assist.git
 cd shell-assistant
 # For Linux:
-bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assistant/master/scripts/quickstart-linux.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assist/master/scripts/quickstart-linux.sh)
 # For macOS:
-bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assistant/master/scripts/quickstart-macos.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assist/master/scripts/quickstart-macos.sh)
 
 
 The quickstart scripts will:
