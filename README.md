@@ -10,15 +10,18 @@ A local app that interprets natural language and safely executes shell commands 
 - Interactive CLI mode with colors, animations, and formatting
 
 ## Quick Start
-
-
+```
 git clone https://github.com/PSxUchiha/shell-assist.git
-cd shell-assistant
-# For Linux:
-bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assist/master/scripts/quickstart-linux.sh)
-# For macOS:
-bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assist/master/scripts/quickstart-macos.sh)
-
+cd shell-assist
+```
+For Linux:
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assist/master/quickstart-linux.sh)
+```
+For macOS:
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/PSxUchiha/shell-assist/master/quickstart-macos.sh)
+```
 
 The quickstart scripts will:
 - Install Ollama and required dependencies
@@ -30,37 +33,41 @@ The quickstart scripts will:
 ## Manual Setup
 1. Install [Ollama](https://ollama.com/download) and run a model:
    
-   # Linux
+   Linux
+   ```
    curl -fsSL https://ollama.com/install.sh | sh
-   # macOS
+   ```
+   macOS
+   ```
    brew install ollama
-   ollama pull deepseek-coder
+   ollama pull deepseek-coder:6.7b
    ollama serve &
-   
+   ```
 2. Create a Python venv and install dependencies:
    
+   ```
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
-   
+   ```
 3. Run the app:
-   
+   ```
    python main.py
    # Visit http://localhost:5000
-   
+   ```
 
 ## Usage Modes
 
 ### Web Interface (Default)
-
+```
 python main.py
 # Visit http://localhost:5000
-
+```
 
 ### CLI Mode (Recommended)
-
+```
 python main.py --cli
-
+```
 Features:
 - 🎨 Colorful interface with emojis and formatting
 - ⚡ Loading animations and interactive prompts
@@ -70,9 +77,9 @@ Features:
 - 🎯 Interactive help system
 
 ### Demo CLI
-
+```
 python demo_cli.py
-
+```
 
 ## CLI Commands
 - help - Show help information
