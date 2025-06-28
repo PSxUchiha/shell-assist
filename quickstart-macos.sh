@@ -49,14 +49,14 @@ source venv/bin/activate
 
 # 5. Install dependencies only if necessary
 echo "🔍 Checking Python dependencies..."
-python3 check_dependencies.py
+python3 check_dependencies.py > /dev/null 2>&1
 dependency_status=$?
 
 if [ $dependency_status -eq 0 ]; then
-    echo "✅ All dependencies are already satisfied"
+    echo "✅ Dependencies satisfied"
 elif [ $dependency_status -eq 1 ] || [ $dependency_status -eq 2 ]; then
     echo "📦 Installing/updating Python dependencies..."
-    pip install --upgrade pip
+    pip install --upgrade pip > /dev/null 2>&1
     pip install -r requirements.txt
     echo "✅ Dependencies installed successfully"
 else
@@ -64,14 +64,16 @@ else
     exit 1
 fi
 
-# 6. Final verification
-echo "🔍 Final dependency verification..."
-python3 check_dependencies.py
-if [ $? -eq 0 ]; then
-    echo "✅ All dependencies verified successfully"
-else
-    echo "❌ Dependency verification failed"
-    exit 1
+# 6. Final verification (only if dependencies were installed)
+if [ $dependency_status -ne 0 ]; then
+    echo "🔍 Verifying installation..."
+    python3 check_dependencies.py > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "✅ All dependencies verified successfully"
+    else
+        echo "❌ Dependency verification failed"
+        exit 1
+    fi
 fi
 
 echo ""
