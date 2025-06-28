@@ -24,8 +24,14 @@ else
 fi
 
 # 3. Pull recommended model
-echo "🤖 Pulling deepseek-coder:6.7b model..."
-ollama pull deepseek-coder:6.7b
+echo "🤖 Checking for deepseek-coder:6.7b model..."
+if ollama list | grep -q "deepseek-coder:6.7b"; then
+    echo "✅ Model deepseek-coder:6.7b already available"
+else
+    echo "📥 Model not found. Pulling deepseek-coder:6.7b model..."
+    ollama pull deepseek-coder:6.7b
+    echo "✅ Model pulled successfully"
+fi
 
 # 4. Set up Python venv
 if [ ! -d "venv" ]; then
