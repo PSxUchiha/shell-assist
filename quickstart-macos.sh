@@ -85,8 +85,8 @@ echo ""
 echo "💻 CLI Mode (recommended):"
 echo "   python main.py --cli"
 echo ""
-echo "🎬 Demo CLI features:"
-echo "   python demo_cli.py"
+echo "🎬 Demo (YouTube):"
+echo "   Opens demo video in Firefox"
 echo ""
 echo "📚 Help:"
 echo "   python main.py --help"
@@ -101,8 +101,9 @@ case $choice in
     python main.py --cli
     ;;
   "demo"|"Demo")
-    echo "🎬 Running CLI demo..."
-    python demo_cli.py
+    echo "🎬 Opening demo video in Firefox..."
+    firefox --new-window "https://www.youtube.com/watch?v=pmEFKsrltes" &
+    echo "✅ Demo video opened in Firefox"
     ;;
   "help"|"Help")
     echo "📚 Showing help..."
